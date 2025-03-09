@@ -20,3 +20,26 @@ func GetPullRequestData(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 
 }
+
+func GetRepoData(w http.ResponseWriter, r *http.Request) {
+
+	data, err := github.GetRepoStats()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(data)
+}
+
+func GetTestResult(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	github.GetWorkflowRuns()
+
+	//fetch test result
+	json.NewEncoder(w).Encode("Test Result")
+}

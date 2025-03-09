@@ -12,9 +12,8 @@ func main() {
 		Addr:    ":8080",
 		Handler: Routes(),
 	}
-
-	err := srv.ListenAndServe()
 	fmt.Print("Server is starting on port number 8080 ")
+	err := srv.ListenAndServe()
 
 	if err != nil {
 		log.Fatal(err)

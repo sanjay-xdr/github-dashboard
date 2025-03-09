@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v60/github"
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/models"
 )
 
@@ -82,7 +82,7 @@ func FetchPullRequestStatsUptoDate(date time.Time) (*models.PRStatus, error) {
 			log.Fatalf("Error fetching PRs: %v", err)
 		}
 		for _, pr := range prs {
-			if pr.GetCreatedAt().Before(date) || pr.GetCreatedAt().Equal(date) {
+			if pr.GetCreatedAt().Time.Before(date) || pr.GetCreatedAt().Time.Equal(date) {
 				allPRs = append(allPRs, pr)
 			}
 		}
@@ -115,4 +115,44 @@ func FetchPullRequestStatsUptoDate(date time.Time) (*models.PRStatus, error) {
 		MergedPR: mergedPRs,
 		OpenPR:   openPRs,
 	}, nil
+}
+
+func GetRepoStats() (*models.RepoStats, error) {
+	// Replace "owner" and "repo" with the repository owner and name
+	owner := "keploy"
+	repo := "website"
+	client := github.NewClient(nil)
+
+	repository, _, err := client.Repositories.Get(context.Background(), owner, repo)
+	if err != nil {
+		fmt.Printf("Error fetching repository details: %v\n", err)
+		return nil, fmt.Errorf("error fetching repository details: %v", err)
+	}
+
+	repoStat := &models.RepoStats{
+
+		Stars:    int16(repository.GetStargazersCount()),
+		Watchers: int16(repository.GetWatchersCount()),
+		Forks:    int16(repository.GetForksCount()),
+	}
+	return repoStat, nil
+}
+
+func GetWorkflowRuns() {
+	owner := "keploy"
+	repo := "website"
+	client := github.NewClient(nil)
+
+	runs, _, err := client.Actions.ListRepositoryWorkflowRuns(context.Background(), owner, repo, nil)
+
+	if err != nil {
+		// http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Print("Something went wrong")
+		return
+	}
+
+	for _, run := range runs.WorkflowRuns {
+		fmt.Printf("Run ID: %d | Status: %s | Conclusion: %s | Created At: %s\n",
+			run.GetID(), run.GetStatus(), run.GetConclusion(), run.GetCreatedAt().Time)
+	}
 }
