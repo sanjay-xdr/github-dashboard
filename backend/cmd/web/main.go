@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -13,6 +14,7 @@ func main() {
 	}
 
 	err := srv.ListenAndServe()
+	fmt.Print("Server is starting on port number 8080 ")
 
 	if err != nil {
 		log.Fatal(err)
