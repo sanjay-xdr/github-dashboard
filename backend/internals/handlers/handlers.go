@@ -43,3 +43,8 @@ func GetTestResult(w http.ResponseWriter, r *http.Request) {
 	//fetch test result
 	json.NewEncoder(w).Encode("Test Result")
 }
+
+func Test(W http.ResponseWriter, r *http.Request) {
+
+	github.Run()
+}
