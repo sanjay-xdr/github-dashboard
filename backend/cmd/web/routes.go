@@ -13,7 +13,7 @@ func Routes() http.Handler {
 
 	r.Get("/pullrequestdata", handlers.GetPullRequestData)
 	r.Get("/repodata", handlers.GetRepoData)
-	r.Get("/testresult", handlers.Test)
+	r.Get("/testresult", handlers.GetMergedPRByDate)
 
 	return r
 }

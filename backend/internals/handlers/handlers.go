@@ -44,7 +44,23 @@ func GetTestResult(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("Test Result")
 }
 
-func Test(W http.ResponseWriter, r *http.Request) {
+func GetMergedPRByDate(w http.ResponseWriter, r *http.Request) {
 
-	github.Run()
+	//send date here and pass to the function
+
+	/* custom
+	24 hours
+	7 days
+	30 days */
+	
+	mergedPR, err := github.GetMergedPRByDate()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(mergedPR)
+
 }

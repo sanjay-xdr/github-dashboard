@@ -12,3 +12,7 @@ type RepoStats struct {
 	Watchers int16
 	Forks    int16
 }
+type MergedPRsByDate struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
