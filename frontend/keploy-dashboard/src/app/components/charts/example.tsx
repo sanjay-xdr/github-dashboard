@@ -17,6 +17,11 @@ import { fetchDashboardData } from '@/utils/utility';
 import { useState,useEffect } from 'react';
 import { useData } from '@/context/data-context';
 
+
+interface RepoOverview{
+  name : string,
+  value:number
+}
 // Mock data (you'll replace with actual data fetching)
 const pullRequestData = [
   { name: 'Jan', open: 45, closed: 35 },
@@ -30,11 +35,6 @@ const issueData = [
   { name: 'Mar', bugs: 25, enhancements: 20, questions: 15 },
 ];
 
-const repositoryOverviewData = [
-  { name: 'Stars', value: 1500 },
-  { name: 'Forks', value: 350 },
-  { name: 'Watchers', value: 250 },
-];
 
 const contributorData = [
   { name: 'Alice', commits: 250, prs: 45, issues: 30 },
@@ -52,21 +52,21 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const GitHubAnalyticsDashboard = () => {
 
-  const{data}=useData();
-  console.log(data);
-  // const [data, setData] = useState(null);
+  // const{data}=useData();
+  // console.log(data);
+  const [repositoryOverviewData, setRepositoryOverviewData] = useState<any[] | undefined>(undefined);
 
 
-  // useEffect(() => {
-  //   const getData = async () => {
-  //     const result = await fetchDashboardData();
-  //     console.log(result);
-  //     setData(result);
-  //   };
+  useEffect(() => {
+    const getData = async () => {
+      const result = await fetchDashboardData();
+      console.log(result);
+      setRepositoryOverviewData(result);
+    };
 
-  //   // getData();
+    getData();
     
-  // }, []);
+  }, []);
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-6">
@@ -155,7 +155,7 @@ const GitHubAnalyticsDashboard = () => {
               fill="#8884d8"
               dataKey="value"
             >
-              {repositoryOverviewData.map((entry, index) => (
+              {repositoryOverviewData?.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -163,7 +163,7 @@ const GitHubAnalyticsDashboard = () => {
             <Legend />
           </PieChart>
           <div className="grid grid-cols-3 gap-2 mt-4">
-            {repositoryOverviewData.map((item, index) => (
+            {repositoryOverviewData?.map((item, index) => (
               <div key={item.name} className="bg-gray-700 p-2 rounded text-center">
                 <div className="text-sm text-gray-400">{item.name}</div>
                 <div className="text-lg font-bold">{item.value}</div>
