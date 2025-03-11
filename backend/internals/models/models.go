@@ -16,3 +16,8 @@ type MergedPRsByDate struct {
 	Date  string `json:"date"`
 	Count int    `json:"count"`
 }
+
+type DateRangeRequest struct {
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+}

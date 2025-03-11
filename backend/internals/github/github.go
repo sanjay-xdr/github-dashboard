@@ -165,12 +165,12 @@ func GetWorkflowRuns() {
 	}
 }
 
-func GetMergedPRByDate() ([]models.MergedPRsByDate, error) {
+func GetMergedPRByDate(startDate, endDate string) ([]models.MergedPRsByDate, error) {
 
-	return getMergedPRByDate(context.Background(), github.NewClient(nil), owner, repo)
+	return getMergedPRByDate(context.Background(), github.NewClient(nil), owner, repo, startDate, endDate)
 }
 
-func getMergedPRByDate(ctx context.Context, client *github.Client, owner, repo string) ([]models.MergedPRsByDate, error) {
+func getMergedPRByDate(ctx context.Context, client *github.Client, owner, repo, startDate, endDate string) ([]models.MergedPRsByDate, error) {
 	opt := &github.PullRequestListOptions{
 		State:     "closed",
 		Direction: "desc",
@@ -179,14 +179,20 @@ func getMergedPRByDate(ctx context.Context, client *github.Client, owner, repo s
 		},
 	}
 
-	now := time.Now()
-	//get date range from user and calculate the date range
-	thirtyDaysAgo := now.AddDate(0, 0, -30)
+	start, err := time.Parse("2006-01-02", startDate)
+	if err != nil {
+		return nil, err
+	}
 
-	// Initialize map with 0 counts for all 30 days
+	end, err := time.Parse("2006-01-02", endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize map with 0 counts for all days in the range
 	mergedPRsByDate := make(map[string]int)
-	for i := 0; i < 30; i++ {
-		date := thirtyDaysAgo.AddDate(0, 0, i).Format("2006-01-02")
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		date := d.Format("2006-01-02")
 		mergedPRsByDate[date] = 0
 	}
 
@@ -198,11 +204,11 @@ func getMergedPRByDate(ctx context.Context, client *github.Client, owner, repo s
 		}
 
 		for _, pr := range prs {
-			if pr.MergedAt != nil && pr.MergedAt.After(thirtyDaysAgo) {
+			if pr.MergedAt != nil && pr.MergedAt.After(start) && pr.MergedAt.Before(end.AddDate(0, 0, 1)) {
 				date := pr.MergedAt.Format("2006-01-02")
 				mergedPRsByDate[date]++
-			} else if pr.MergedAt != nil && pr.MergedAt.Before(thirtyDaysAgo) {
-				// Stop processing once past the 30-day window
+			} else if pr.MergedAt != nil && pr.MergedAt.Before(start) {
+				// Stop processing once past the date range
 				break
 			}
 		}
@@ -215,8 +221,8 @@ func getMergedPRByDate(ctx context.Context, client *github.Client, owner, repo s
 
 	// Convert map to sorted slice
 	var result []models.MergedPRsByDate
-	for i := 0; i < 30; i++ {
-		date := thirtyDaysAgo.AddDate(0, 0, i).Format("2006-01-02")
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		date := d.Format("2006-01-02")
 		result = append(result, models.MergedPRsByDate{Date: date, Count: mergedPRsByDate[date]})
 	}
 	fmt.Println()

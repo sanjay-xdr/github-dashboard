@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/github"
+	"github.com/sanjay-xdr/github-dashboard/backend/internals/models"
 )
 
 func GetPullRequestData(w http.ResponseWriter, r *http.Request) {
@@ -46,19 +47,24 @@ func GetTestResult(w http.ResponseWriter, r *http.Request) {
 
 func GetMergedPRByDate(w http.ResponseWriter, r *http.Request) {
 
-	//send date here and pass to the function
+	var dateRange models.DateRangeRequest
 
-	/* custom
-	24 hours
-	7 days
-	30 days */
-	
-	mergedPR, err := github.GetMergedPRByDate()
+	if err := json.NewDecoder(r.Body).Decode(&dateRange); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	startDate := dateRange.StartDate
+	endDate := dateRange.EndDate
+	if startDate == "" || endDate == "" {
+		http.Error(w, "startDate and endDate are required", http.StatusBadRequest)
+		return
+	}
+
+	mergedPR, err := github.GetMergedPRByDate(startDate, endDate)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(mergedPR)
