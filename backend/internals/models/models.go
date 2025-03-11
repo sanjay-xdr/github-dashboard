@@ -21,3 +21,8 @@ type DateRangeRequest struct {
 	StartDate string `json:"startDate"`
 	EndDate   string `json:"endDate"`
 }
+
+type RepoOverview struct {
+	Name  string `json:"name"`
+	Value int16  `json:"value"`
+}
