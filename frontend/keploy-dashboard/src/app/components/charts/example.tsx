@@ -13,6 +13,9 @@ import {
   Check, 
   X 
 } from 'lucide-react';
+import { fetchDashboardData } from '@/utils/utility';
+import { useState,useEffect } from 'react';
+import { useData } from '@/context/data-context';
 
 // Mock data (you'll replace with actual data fetching)
 const pullRequestData = [
@@ -48,6 +51,23 @@ const codeQualityData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const GitHubAnalyticsDashboard = () => {
+
+  const{data}=useData();
+  console.log(data);
+  // const [data, setData] = useState(null);
+
+
+  // useEffect(() => {
+  //   const getData = async () => {
+  //     const result = await fetchDashboardData();
+  //     console.log(result);
+  //     setData(result);
+  //   };
+
+  //   // getData();
+    
+  // }, []);
+
   return (
     <div className="bg-gray-900 text-white min-h-screen p-6">
       <header className="flex justify-between items-center mb-6">
@@ -210,3 +230,4 @@ const GitHubAnalyticsDashboard = () => {
 };
 
 export default GitHubAnalyticsDashboard;
+

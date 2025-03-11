@@ -1,7 +1,8 @@
 
-import { Github } from "lucide-react";
-import TimeSeriesChart from "./components/charts/timeSeries";
+// import { Github } from "lucide-react";
+// import TimeSeriesChart from "./components/charts/timeSeries";
 import GitHubAnalyticsDashboard from "./components/charts/example";
+// import { DataProvider } from "@/context/data-context";
 
 export default function Home() {
 
