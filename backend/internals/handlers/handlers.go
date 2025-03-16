@@ -91,8 +91,47 @@ func FetchPRData(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	dashboardData := GeneratePRDashboard(data)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(dashboardData)
 
+}
+
+func GeneratePRDashboard(prs []models.PR) []models.PRDashboard {
+	prStats := make(map[string]*models.PRDashboard)
+
+	for _, pr := range prs {
+		date := pr.CreatedAt.Format("2006-01-02") // Format date as YYYY-MM-DD
+
+		if _, exists := prStats[date]; !exists {
+			prStats[date] = &models.PRDashboard{
+				Date:     date,
+				TotalPR:  0,
+				OpenPR:   0,
+				MergedPR: 0,
+				ClosedPR: 0,
+			}
+		}
+
+		// Increment total PRs for that date
+		prStats[date].TotalPR++
+
+		// Categorize PRs by state
+		if pr.State == "open" {
+			prStats[date].OpenPR++
+		} else if pr.State == "merged" { // Assuming "merged" is a valid PR state
+			prStats[date].MergedPR++
+		} else if pr.State == "closed" {
+			prStats[date].MergedPR++
+		}
+	}
+
+	// Convert map to slice
+	var result []models.PRDashboard
+	for _, data := range prStats {
+		result = append(result, *data)
+	}
+
+	return result
 }

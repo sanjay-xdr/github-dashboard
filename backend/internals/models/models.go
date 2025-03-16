@@ -45,3 +45,11 @@ type PR struct {
 	Repository string             `json:"repository"`
 	InsertedAt primitive.DateTime `bson:"inserted_at"`
 }
+
+type PRDashboard struct {
+	Date     string `json:"date"`
+	TotalPR  int    `json:"totalPR"`
+	OpenPR   int    `json:"openPR"`
+	MergedPR int    `json:"mergedPR"`
+	ClosedPR int    `json:"closedPR"`
+}
