@@ -13,7 +13,7 @@ import {
   Check, 
   X 
 } from 'lucide-react';
-import { fetchDashboardData } from '@/utils/utility';
+// import { fetchDashboardData } from '@/libs/api';
 import { useState,useEffect } from 'react';
 import { useData } from '@/context/data-context';
 
@@ -57,16 +57,7 @@ const GitHubAnalyticsDashboard = () => {
   const [repositoryOverviewData, setRepositoryOverviewData] = useState<any[] | undefined>(undefined);
 
 
-  useEffect(() => {
-    const getData = async () => {
-      const result = await fetchDashboardData();
-      console.log(result);
-      setRepositoryOverviewData(result);
-    };
-
-    getData();
-    
-  }, []);
+ 
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-6">

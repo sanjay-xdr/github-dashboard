@@ -1,7 +1,5 @@
 
-// import { Github } from "lucide-react";
-// import TimeSeriesChart from "./components/charts/timeSeries";
-import GitHubAnalyticsDashboard from "./components/charts/example";
+import { Dashboard } from "./Dashboard";
 // import { DataProvider } from "@/context/data-context";
 
 export default function Home() {
@@ -17,8 +15,7 @@ export default function Home() {
   
   return (
    <>
-   {/* <TimeSeriesChart/> */}
-   <GitHubAnalyticsDashboard/>
+   <Dashboard/>
    </>
   );
 }
