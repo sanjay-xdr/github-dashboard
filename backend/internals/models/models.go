@@ -1,5 +1,11 @@
 package models
 
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type PRStatus struct {
 	TotalPR  int16
 	OpenPR   int16
@@ -25,4 +31,17 @@ type DateRangeRequest struct {
 type RepoOverview struct {
 	Name  string `json:"name"`
 	Value int16  `json:"value"`
+}
+
+type PR struct {
+	ID         int                `json:"id"`
+	Number     int                `json:"number"`
+	Title      string             `json:"title"`
+	State      string             `json:"state"`
+	Merged     bool               `json:"merged"`
+	CreatedAt  time.Time          `json:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at"`
+	MergedAt   *time.Time         `json:"merged_at,omitempty"`
+	Repository string             `json:"repository"`
+	InsertedAt primitive.DateTime `bson:"inserted_at"`
 }

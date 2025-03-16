@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/sanjay-xdr/github-dashboard/backend/internals/database"
 )
 
 func main() {
+
+	database.InitMongo()
 
 	srv := &http.Server{
 		Addr:    ":8080",

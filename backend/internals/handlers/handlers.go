@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/github"
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/models"
@@ -74,5 +75,24 @@ func GetMergedPRByDate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(mergedPR)
+
+}
+
+func FetchPRData(w http.ResponseWriter, r *http.Request) {
+
+	prData, err := github.FetchPRs()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	github.InsertPRs(prData)
+	data, err := github.QueryPRsByDate(time.Time{}, time.Time{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
 
 }
