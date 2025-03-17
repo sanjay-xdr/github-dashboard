@@ -91,14 +91,61 @@ func FetchPRData(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	dashboardData := GeneratePRDashboard(data)
+	dashboardData := generatePRDashboard(data)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(dashboardData)
 
 }
 
-func GeneratePRDashboard(prs []models.PR) []models.PRDashboard {
+func FetchWorkflowData(w http.ResponseWriter, r *http.Request) {
+
+	workflowdata, err := github.FetchWorkflows()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// fmt.Print(workflowdata)
+	// generatePRDashboard(workflowdata)
+	worflowDashboardData := generateWorkflowDashboard(workflowdata)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(worflowDashboardData)
+
+}
+
+func generateWorkflowDashboard(workflowdata []models.WorkflowItem) []models.WorkflowSummary {
+	dateSummaryMap := make(map[string]*models.WorkflowSummary)
+
+	for _, wf := range workflowdata {
+		date := wf.CreatedAt.Format("2006-01-02")
+		if _, exists := dateSummaryMap[date]; !exists {
+			dateSummaryMap[date] = &models.WorkflowSummary{
+				Date:    date,
+				Success: 0,
+				Failed:  0,
+				Pending: 0,
+			}
+		}
+
+		if wf.Conclusion == "success" {
+			dateSummaryMap[date].Success++
+		} else if wf.Conclusion == "failure" {
+			dateSummaryMap[date].Failed++
+		} else if wf.Conclusion == "action_required" {
+			dateSummaryMap[date].Pending++
+		}
+	}
+
+	var summary []models.WorkflowSummary
+	for _, v := range dateSummaryMap {
+		summary = append(summary, *v)
+	}
+
+	return summary
+}
+
+func generatePRDashboard(prs []models.PR) []models.PRDashboard {
 	prStats := make(map[string]*models.PRDashboard)
 
 	for _, pr := range prs {

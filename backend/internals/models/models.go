@@ -53,3 +53,27 @@ type PRDashboard struct {
 	MergedPR int    `json:"mergedPR"`
 	ClosedPR int    `json:"closedPR"`
 }
+
+type WorkflowItem struct {
+	ID         int                `json:"id"`
+	Name       string             `json:"name"`
+	NodeID     string             `json:"node_id"`
+	Path       string             `json:"path"`
+	Status     string             `json:"status"`
+	CreatedAt  time.Time          `json:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at"`
+	InsertedAt primitive.DateTime `json:"inserted_at"`
+	Conclusion string             `json:"conclusion"`
+}
+
+type Workflows struct {
+	TotalCount int            `json:"total_count"`
+	Workflows  []WorkflowItem `json:"workflow_runs"`
+}
+
+type WorkflowSummary struct {
+	Date    string `json:"date"`
+	Success int    `json:"success"`
+	Failed  int    `json:"failed"`
+	Pending int    `json:"pending"`
+}

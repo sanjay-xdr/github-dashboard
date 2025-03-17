@@ -25,6 +25,7 @@ func Routes() http.Handler {
 	v1.Get("/repodata", handlers.GetRepoData)
 	v1.Post("/merged-prs", handlers.GetMergedPRByDate)
 	v1.Get("/fetch-prs", handlers.FetchPRData)
+	v1.Get("/fetch-workflow", handlers.FetchWorkflowData)
 
 	r.Mount("/api/v1", v1)
 
