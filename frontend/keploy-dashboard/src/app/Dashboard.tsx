@@ -1,13 +1,14 @@
 "use client"
+import { Star } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Bar, BarChart, Legend, Tooltip, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 export const Dashboard = () => {
   const [prData, setPrData] = useState<any[] | null>(null);
-  const [repoData, setRepoData] = useState<any[] | null>(null);
+  const [repoData, setRepoData] = useState<any[] | undefined>();
   const [workflowData, setWorkflowData] = useState<any[] | null>(null);
   const [filteredPrData, setFilteredPrData] = useState<any[] | null>(null);
-  const [filteredRepoData, setFilteredRepoData] = useState<any[] | null>(null);
+  // const [filteredRepoData, setFilteredRepoData] = useState<any[] | null>(null);
   const [filteredWorkflowData, setFilteredWorkflowData] = useState<any[] | null>(null);
   const [timeFilter, setTimeFilter] = useState<string>("30days");
 
@@ -18,6 +19,9 @@ export const Dashboard = () => {
     skipped: "#FF9800",  // Orange
     pending: "#2196F3"   // Blue
   };
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,27 +38,29 @@ export const Dashboard = () => {
         setPrData(prData);
 
         // Fetch repo data
-        const repoResponse = await fetch("http://localhost:8080/api/v1/fetch-repo-stats");
+        const repoResponse = await fetch("http://localhost:8080/api/v1/repodata");
         let repoData = await repoResponse.json();
-        repoData = repoData.map((item: any) => ({
-          date: item.date || "",
-          stars: item.stars ?? 0,
-          watchers: item.watchers ?? 0,
-          forks: item.forks ?? 0,
-        }));
+        console.log("repoData",repoData);
+        // repoData = repoData.map((item: any) => ({
+        //   date: item.date || "",
+        //   stars: item.stars ?? 0,
+        //   watchers: item.watchers ?? 0,
+        //   forks: item.forks ?? 0,
+        // }));
         setRepoData(repoData);
 
         // Fetch workflow data
-        const workflowResponse = await fetch("http://localhost:8080/api/v1/fetch-workflows");
+        const workflowResponse = await fetch("http://localhost:8080/api/v1/fetch-workflow");
         let workflowData = await workflowResponse.json();
+        console.log(workflowData);
         workflowData = workflowData.map((item: any) => ({
           date: item.date || "",
           success: item.success ?? 0,
           failed: item.failed ?? 0,
-          cancelled: item.cancelled ?? 0,
-          skipped: item.skipped ?? 0,
           pending: item.pending ?? 0,
         }));
+        console.log("AFter operation");
+        console.log(workflowData);
         setWorkflowData(workflowData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -92,16 +98,7 @@ export const Dashboard = () => {
         });
         setFilteredPrData(filtered);
       }
-      
-      // Filter repo data
-      if (repoData) {
-        const filtered = repoData.filter(item => {
-          const itemDate = new Date(item.date);
-          return itemDate >= filterDate;
-        });
-        setFilteredRepoData(filtered);
-      }
-      
+            
       // Filter workflow data
       if (workflowData) {
         const filtered = workflowData.filter(item => {
@@ -126,16 +123,13 @@ export const Dashboard = () => {
     const summary = {
       success: 0,
       failed: 0,
-      cancelled: 0,
-      skipped: 0,
       pending: 0
     };
     
     filteredWorkflowData.forEach(item => {
       summary.success += item.success;
       summary.failed += item.failed;
-      summary.cancelled += item.cancelled;
-      summary.skipped += item.skipped;
+
       summary.pending += item.pending;
     });
     
@@ -180,9 +174,9 @@ export const Dashboard = () => {
                 stroke="#888"
                 interval={0}
                 textAnchor="end"
-                angle={-45}
-                dy={10}
-                tickMargin={5}
+                dy={5}
+             
+                tickMargin={1}
                 tickFormatter={(date) =>
                   new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                 }
@@ -199,29 +193,37 @@ export const Dashboard = () => {
         
         {/* Repository Stats Chart */}
         <div className="bg-gray-700 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Repository Stats</h2>
+          <div className="flex items-center mb-4">
+            <Star className="mr-2" />
+            <h2 className="text-xl font-semibold">Repository Overview</h2>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={filteredRepoData || []} margin={{ bottom: 50 }}>
-              <XAxis
-                dataKey="date"
-                stroke="#888"
-                interval={0}
-                textAnchor="end"
-                angle={-45}
-                dy={10}
-                tickMargin={5}
-                tickFormatter={(date) =>
-                  new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                }
-              />
-              <YAxis stroke="#888" />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="stars" stroke="#FF9800" name="Stars" dot={false} strokeWidth={2} />
-              <Line type="monotone" dataKey="watchers" stroke="#03A9F4" name="Watchers" dot={false} strokeWidth={2} />
-              <Line type="monotone" dataKey="forks" stroke="#E91E63" name="Forks" dot={false} strokeWidth={2} />
-            </LineChart>
+          <PieChart width={350} height={350}>
+            <Pie
+              data={repoData}
+              cx={295}
+              cy={125}
+              labelLine={false}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {repoData?.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
           </ResponsiveContainer>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {repoData?.map((item, index) => (
+              <div key={item.name} className="bg-gray-700 p-2 rounded text-center">
+                <div className="text-sm text-gray-400">{item.name}</div>
+                <div className="text-lg font-bold">{item.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
         
         {/* Workflow Status Charts */}
@@ -234,8 +236,7 @@ export const Dashboard = () => {
                 stroke="#888"
                 interval={0}
                 textAnchor="end"
-                angle={-45}
-                dy={10}
+                dy={5}
                 tickMargin={5}
                 tickFormatter={(date) =>
                   new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
@@ -246,8 +247,6 @@ export const Dashboard = () => {
               <Legend />
               <Bar dataKey="success" fill={WORKFLOW_COLORS.success} name="Success" />
               <Bar dataKey="failed" fill={WORKFLOW_COLORS.failed} name="Failed" />
-              <Bar dataKey="cancelled" fill={WORKFLOW_COLORS.cancelled} name="Cancelled" />
-              <Bar dataKey="skipped" fill={WORKFLOW_COLORS.skipped} name="Skipped" />
               <Bar dataKey="pending" fill={WORKFLOW_COLORS.pending} name="Pending" />
             </BarChart>
           </ResponsiveContainer>
@@ -271,7 +270,7 @@ export const Dashboard = () => {
                   <Cell key={`cell-${index}`} fill={WORKFLOW_COLORS[entry.name as keyof typeof WORKFLOW_COLORS]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [`${value} runs`, ""]} />
+              <Tooltip />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -288,14 +287,15 @@ export const Dashboard = () => {
           <div className="text-sm text-gray-400">Total PRs in selected period</div>
         </div>
         
-        <div className="bg-gray-700 p-4 rounded-lg">
+        {/* <div className="bg-gray-700 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Repository Growth</h3>
           <div className="text-3xl font-bold">
-            {filteredRepoData && filteredRepoData.length > 0 ? 
-              filteredRepoData[filteredRepoData.length - 1].stars : 0}
+            {repoData && repoData.length > 0 ? 
+              repoData[repoData.length - 1].stars : 0}
           </div>
+          <p>I dont know what to do here</p>
           <div className="text-sm text-gray-400">Current Stars</div>
-        </div>
+        </div> */}
         
         <div className="bg-gray-700 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Workflow Success Rate</h3>
