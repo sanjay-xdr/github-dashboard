@@ -9,6 +9,15 @@
 
 ![image](https://github.com/user-attachments/assets/e40a8ad4-6cf1-4308-b31c-3baa3a7789be)
 
+## Prerequisites
+
+Before you begin, make sure you have the following installed on your machine:
+
+1. **Git**: To clone the repository.
+2. **Go**: To run the backend application.
+3. **Node.js and npm**: To run the frontend application.
+4. **MongoDB**: To use as the database for the project.
+
 # Setting Up the Project Locally
 
 Follow these steps to set up and run the project locally on your machine.
