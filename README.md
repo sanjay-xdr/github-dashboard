@@ -18,7 +18,7 @@ Follow these steps to set up and run the project locally on your machine.
 First, clone the repository to your local machine using the following command:
 
 ```bash
-git clone [https://github.com/your-username/your-repo.git](https://github.com/sanjay-xdr/github-dashboard.git)
+git clone https://github.com/sanjay-xdr/github-dashboard.git
 ```
 
 ## Running the Backend
