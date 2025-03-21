@@ -40,3 +40,7 @@ func GetMongoClient() *mongo.Client {
 func GetPRCollection() *mongo.Collection {
 	return GetMongoClient().Database("github_dashboard").Collection("pull_requests")
 }
+
+func GetWorkflowCollection() *mongo.Collection {
+	return GetMongoClient().Database("github_dashboard").Collection("workflow")
+}
