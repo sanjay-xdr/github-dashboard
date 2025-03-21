@@ -1,13 +1,17 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/sanjay-xdr/github-dashboard/backend/internals/database"
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func FetchWorkflows() ([]models.WorkflowItem, error) {
@@ -55,4 +59,62 @@ func FetchWorkflows() ([]models.WorkflowItem, error) {
 
 	fmt.Printf("Fetched %d workflows from GitHub\n", len(recentWorkflows))
 	return recentWorkflows, nil
+}
+
+// Insert PRs into MongoDB
+func InsertWorkflows(workflow []models.WorkflowItem) (bool, error) {
+	if len(workflow) == 0 {
+		fmt.Println("No new PRs to insert.")
+		return false, nil
+	}
+
+	col := database.GetWorkflowCollection()
+	ctx := context.TODO()
+
+	for _, item := range workflow {
+		// Define the filter to check if PR already exists (by PR number & repository)
+		filter := bson.M{"Id": item.ID, "Name": item.Name}
+
+		// Define the update operation (set PR data)
+		update := bson.M{"$set": item}
+
+		// Upsert = true ensures:
+		// - If PR exists, update it
+		// - If PR doesn't exist, insert it
+		opts := options.UpdateOne().SetUpsert(true)
+
+		_, err := col.UpdateOne(ctx, filter, update, opts)
+		if err != nil {
+			return false, fmt.Errorf("MongoDB Upsert Error: %v", err)
+		}
+	}
+
+	fmt.Println("Inserted/Updated Workflows successfully!")
+	return true, nil
+}
+
+func QueryWorkflowsByDate(startDate, endDate time.Time) ([]models.WorkflowItem, error) {
+	col := database.GetWorkflowCollection()
+	filter := bson.M{}
+	if !startDate.IsZero() && !endDate.IsZero() {
+		filter["created_at"] = bson.M{
+			"$gte": startDate.UTC(),
+			"$lte": endDate.UTC(),
+		}
+	}
+
+	cursor, err := col.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, fmt.Errorf("MongoDB Query Error: %v", err)
+	}
+	defer cursor.Close(context.TODO())
+
+	var results []models.WorkflowItem
+	err = cursor.All(context.TODO(), &results)
+	if err != nil {
+		return nil, fmt.Errorf("MongoDB Decoding Error: %v", err)
+	}
+
+	fmt.Printf("Found %d PRs from MongoDB\n", len(results))
+	return results, nil
 }

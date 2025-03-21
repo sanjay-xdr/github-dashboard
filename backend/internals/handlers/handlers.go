@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/sanjay-xdr/github-dashboard/backend/internals/github"
@@ -92,6 +94,15 @@ func FetchPRData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dashboardData := generatePRDashboard(data)
+	sort.Slice(dashboardData, func(i, j int) bool {
+		dateI, errI := time.Parse("2006-01-02", dashboardData[i].Date)
+		dateJ, errJ := time.Parse("2006-01-02", dashboardData[j].Date)
+		if errI != nil || errJ != nil {
+			fmt.Println("Error parsing date:", errI, errJ)
+			return false
+		}
+		return dateI.Before(dateJ)
+	})
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(dashboardData)
@@ -101,13 +112,20 @@ func FetchPRData(w http.ResponseWriter, r *http.Request) {
 func FetchWorkflowData(w http.ResponseWriter, r *http.Request) {
 
 	workflowdata, err := github.FetchWorkflows()
+	github.InsertWorkflows(workflowdata)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// fmt.Print(workflowdata)
-	// generatePRDashboard(workflowdata)
-	worflowDashboardData := generateWorkflowDashboard(workflowdata)
+	// generatePRDashboard(workflowdata)\
+	fetchData, err := github.QueryWorkflowsByDate(time.Time{}, time.Time{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	worflowDashboardData := generateWorkflowDashboard(fetchData)
+
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(worflowDashboardData)
